@@ -1,102 +1,85 @@
 package main
-
+//https://github.com/go-kit/kit/blob/master/examples/addsvc/cmd/addsvc/addsvc.go
 import (
 	"github.com/dgraph-io/badger"
+	"github.com/go-kit/kit/log"
 	"flag"
+	"github.com/oklog/oklog/pkg/group"
 	"fmt"
-	"log"
+	// "log"
+	"net"
+	"net/http"
 	"os"
-	"strconv"
+	"os/signal"
+	"syscall"
+	"HackathonBlockchain/endpoints"
+	"HackathonBlockchain/services"
+	"HackathonBlockchain/transports"
 )
 
 	
 func main(){
+
+ 	fs := flag.NewFlagSet("svc", flag.ExitOnError)
+	var (
+		httpAddr       = fs.String("http-addr", ":8081", "HTTP listen address")
+		//grpcAddr       = fs.String("grpc-addr", ":8082", "gRPC listen address")
+	)
+
+
+
 	db, err := badger.Open(badger.DefaultOptions("tmp/badger"))
-	  if err != nil {
-		  log.Fatal(err)
+	if err != nil {
+		  fmt.Print("Failed to connect to db")
 	}
-	bc := NewBlockChain(db)
-	cli := CLI{bc}
-	cli.Run()
-	// bc.AddBlock("Block 1")
-	// bc.AddBlock("Block 2")
+ 	defer db.Close()
+ 
+	var (
+		service        = services.New(db)
+		endpoints      = endpoints.New(service)
+		httpHandler    = transports.NewHTTPHandler(endpoints)
+		// grpcServer     = addtransport.NewGRPCServer(endpoints, tracer, zipkinTracer, logger)
 
-	// bci := bc.Iterator()
-	// while 
-	// // bc.Print()
+	)
 
-	
-
-	  defer db.Close()
-	
-
-}
-
-
-type CLI struct {
-	bc *Blockchain
-}
-
-
-func (cli *CLI) Run(){
-	// cli.validateArgs()
-
-	addBlockCmd := flag.NewFlagSet("addblock", flag.ExitOnError)
-	printChainCmd := flag.NewFlagSet("printchain", flag.ExitOnError)
-	addBlockData := addBlockCmd.String("data", "", "Block data")
-
-	switch os.Args[1] {
-	case "addblock":
-		_ = addBlockCmd.Parse(os.Args[2:])
-	case "printchain":
-		_ = printChainCmd.Parse(os.Args[2:])
-	default:
-		// cli.printUsage()
-		os.Exit(1)
+	var logger log.Logger
+	{
+		logger = log.NewLogfmtLogger(os.Stderr)
+		logger = log.With(logger, "ts", log.DefaultTimestampUTC)
+		logger = log.With(logger, "caller", log.DefaultCaller)
 	}
 
-	if addBlockCmd.Parsed() {
-		if *addBlockData == "" {
-			addBlockCmd.Usage()
-			os.Exit(1)
+	var g group.Group
+	{
+		// The HTTP listener mounts the Go kit HTTP handler we created.
+		httpListener, err := net.Listen("tcp", *httpAddr)
+		if err != nil {
+			logger.Log("transport", "HTTP", "during", "Listen", "err", err)
 		}
-		cli.addBlock(*addBlockData)
+		g.Add(func() error {
+			logger.Log("transport", "HTTP", "addr", *httpAddr)
+			return http.Serve(httpListener, httpHandler)
+		}, func(error) {
+			httpListener.Close()
+		})
 	}
-
-	if printChainCmd.Parsed() {
-		cli.printChain()
+	{
+		// This function just sits and waits for ctrl-C.
+		cancelInterrupt := make(chan struct{})
+		g.Add(func() error {
+			c := make(chan os.Signal, 1)
+			signal.Notify(c, syscall.SIGINT, syscall.SIGTERM)
+			select {
+			case sig := <-c:
+				return fmt.Errorf("received signal %s", sig)
+			case <-cancelInterrupt:
+				return nil
+			}
+		}, func(error) {
+			close(cancelInterrupt)
+		})
 	}
-}
+	logger.Log("exit", g.Run())
 
-func (cli *CLI) addBlock(data string) {
-	cli.bc.AddBlock([]byte(data))
-	fmt.Println("Success!")
-}
 
-func (cli *CLI) printChain() {
-	bci := cli.bc.Iterator()
-	
-	for {
-		block := bci.Next()
-		if len(block.PrevBlockHash) == 0 {
-			fmt.Printf("%+v",block)
-			fmt.Printf("Prev. hash: %x\n", block.PrevBlockHash)
-			fmt.Printf("Data: %+v\n", block.Data)
-			fmt.Printf("Hash: %x\n", block.Hash)
-			pow := NewProofOfWork(block)
-			fmt.Printf("PoW: %s\n", strconv.FormatBool(pow.Validate()))
-			break
-		}
-
-		
-
-		fmt.Printf("Prev. hash: %x\n", block.PrevBlockHash)
-		fmt.Printf("Data: %s\n", block.Data)
-		fmt.Printf("Hash: %x\n", block.Hash)
-		pow := NewProofOfWork(block)
-		fmt.Printf("PoW: %s\n", strconv.FormatBool(pow.Validate()))
-		fmt.Println()
-
-		
-	}
 }

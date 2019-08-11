@@ -1,12 +1,11 @@
-package main
+package services
 
-
-type initData struct {
+type InitData struct {
 	dataset []byte `json:"dataset"`
-	baseline Int `json:"baseline"`
+	baseline int `json:"baseline"`
 }
 
-type modelData struct {
+type ModelData struct {
 	model []byte `json:"model",omitempty`
 	preds []byte `json:"preds",omitempty`
 }
