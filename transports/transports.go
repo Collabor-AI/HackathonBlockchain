@@ -4,6 +4,7 @@ package transports
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"github.com/go-kit/kit/endpoint"
 	"net/http"
 	httptransport "github.com/go-kit/kit/transport/http"
@@ -18,6 +19,11 @@ func NewHTTPHandler(endpoints endpoints.Set) http.Handler {
 		endpoints.NewBlockchainEndpoint,
 		decodeHTTPNewBlockchainRequest,
 		encodeHTTPNewBlockchainResponse,
+	))	
+	m.Handle("/printBlockchain", httptransport.NewServer(
+		endpoints.PrintBlockchainEndpoint,
+		decodeHTTPPrintBlockchainRequest,
+		encodeHTTPPrintBlockchainResponse,
 	))	
 	return m
 }
@@ -51,6 +57,25 @@ func encodeHTTPNewBlockchainResponse(ctx context.Context, w http.ResponseWriter,
 	if f, ok := response.(endpoint.Failer); ok && f.Failed() != nil {
 		return nil
 	}
+
+	// respBytes, _ := json.Marshal(response)
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	return json.NewEncoder(w).Encode(response)
+}
+
+
+
+func decodeHTTPPrintBlockchainRequest(_ context.Context, r *http.Request) (interface{}, error) {
+	var req endpoints.PrintBlockchainRequest
+	return req, nil
+}
+
+func encodeHTTPPrintBlockchainResponse(ctx context.Context, w http.ResponseWriter, response interface{}) error {
+	if f, ok := response.(endpoint.Failer); ok && f.Failed() != nil {
+		return nil
+	}
+	fmt.Printf("Print Blockchain: %+v", response)
+	respBytes, _ := json.Marshal(response)
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	return json.NewEncoder(w).Encode(respBytes)
 }

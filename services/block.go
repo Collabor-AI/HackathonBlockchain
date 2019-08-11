@@ -7,6 +7,7 @@ import (
 	// "github.com/dgraph-io/badger"
 	// "log"
 	// "strconv"
+	"fmt"
 	"time"
 	
 )
@@ -21,7 +22,7 @@ type Block struct {
 }
 
 type Blockchain struct {
-	tip []byte	
+	Tip []byte	
 }
 	
 func NewBlock(data []byte, prevBlockHash []byte) *Block {
@@ -68,13 +69,13 @@ func NewBlock(data []byte, prevBlockHash []byte) *Block {
 
 
 
-func NewGenesisBlock() *Block {
-	data := InitData{[]byte("test"), 0}
-	dataBytes,_ := json.Marshal(data)
+func NewGenesisBlock(startingData InitData) *Block {
+	fmt.Printf("startingData is s %+v",startingData )
+	dataBytes,_ := json.Marshal(startingData)
 	return NewBlock(dataBytes, []byte{})
 }
 
-func (b *Block) Serialize() []byte{
+func (b Block) Serialize() []byte{
 	blockBytes, _ := json.Marshal(b)
 	return blockBytes
 }
@@ -85,35 +86,4 @@ func DeserializeBlock(d []byte) *Block{
 
 	return &block
 }
-
-
-
-// type BlockchainIterator struct {
-// 	currentHash []byte
-// 	// db *badger.DB
-// }
-
-// func (bc *Blockchain) Iterator() *BlockchainIterator {
-// 	bci := &BlockchainIterator{bc.tip, bc.db}
-// 	return bci
-// }
-
-// func (i *BlockchainIterator) Next() *Block {
-// 	var block *Block
-
-// 	_ = i.db.View(func(txn *badger.Txn) error {
-// 		item, err := txn.Get(i.currentHash)
-// 		if err != nil {
-// 			log.Print("Failed to find", err)
-// 		}
-// 		encodedBlock, _ := item.ValueCopy(nil)
-// 		block = DeserializeBlock(encodedBlock)
-
-// 		return nil
-// 	})
-
-// 	i.currentHash = block.PrevBlockHash
-
-// 	return block
-// }
 

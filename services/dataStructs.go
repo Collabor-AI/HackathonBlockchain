@@ -1,8 +1,8 @@
 package services
 
 type InitData struct {
-	dataset []byte `json:"dataset"`
-	baseline int `json:"baseline"`
+	Dataset []byte `json:"dataset"`
+	Baseline float64 `json:"baseline"`
 }
 
 type ModelData struct {
