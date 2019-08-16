@@ -16,6 +16,7 @@ import (
 type Set struct {
 	NewBlockchainEndpoint endpoint.Endpoint
 	PrintBlockchainEndpoint endpoint.Endpoint
+	AddBlockEndpoint endpoint.Endpoint
 }
 
 func New(svc services.Service) Set {
@@ -27,9 +28,14 @@ func New(svc services.Service) Set {
 	{
 		printBlockchainEndpoint = MakePrintBlockchainEndpoint(svc)
 	}
+	var addBlockEndpoint endpoint.Endpoint
+	{
+		addBlockEndpoint = MakeAddBlockEndpoint(svc)
+	}
 	return Set {
 		NewBlockchainEndpoint: newBlockchainEndpoint,
 		PrintBlockchainEndpoint: printBlockchainEndpoint,
+		AddBlockEndpoint: addBlockEndpoint,
 	}
 }
 
@@ -85,4 +91,29 @@ type PrintBlockchainRequest struct {
 type PrintBlockchainResponse struct {
 	BlockchainIter []byte 
 	Err error 
+}
+
+func (s Set) AddBlock(ctx context.Context, md services.ModelData) (error){
+	resp, err := s.AddBlockEndpoint(ctx, AddBlockRequest{Md:md})
+	if err != nil {
+		return err
+	}
+	response,_ := resp.(AddBlockResponse)
+	return response.Err
+}
+
+func MakeAddBlockEndpoint(s services.Service) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
+		req := request.(AddBlockRequest)
+		err = s.AddBlock(ctx, req.Md)
+		return AddBlockResponse{Err: err}, nil
+	}
+}
+
+type AddBlockRequest struct {
+	Md services.ModelData `json:"modelData"`
+}
+
+type AddBlockResponse struct {
+	Err error `json:"err,omitempty"`
 }

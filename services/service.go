@@ -16,7 +16,7 @@ import (
 
 type Service interface {
 	NewBlockchain(ctx context.Context, startingData InitData) (Blockchain, error)
-	// AddBlock(ctx context.Context, data modelData, db *badger.DB) (error)
+	AddBlock(ctx context.Context, md ModelData) (error)
 	PrintBlockchain(ctx context.Context) (*BlockchainIter, error)
 }
 
@@ -37,27 +37,28 @@ type basicService struct{
 }
 
 
-// func (s basicService) AddBlock(ctx context.Context, data modelData, db *badger.DB) error{
-// 	bc := s.NewBlockchain()
-// 	var lastHash []byte
+func (s basicService) AddBlock(ctx context.Context, md ModelData) error{
+	bc,_ := s.NewBlockchain(ctx, InitData{})
+	var lastHash []byte
 
-// 	_ = bc.db.View(func(txn *badger.Txn) error {
-// 		item, _ := txn.Get([]byte("last"))
+	_ = s.db.View(func(txn *badger.Txn) error {
+		item, _ := txn.Get([]byte("last"))
 
-// 		lastHash, _ = item.ValueCopy(nil)
-// 		return nil
-// 	})
+		lastHash, _ = item.ValueCopy(nil)
+		return nil
+	})
 
-// 	newBlock := NewBlock(md,lastHash)
+	mdBytes,_ := json.Marshal(md)
+	newBlock := NewBlock(mdBytes,lastHash)
 
-// 	_ = bc.db.Update(func(txn *badger.Txn) error {
-// 		_ = txn.Set(newBlock.Hash, newBlock.Serialize())
-// 		_ = txn.Set([]byte("last"), newBlock.Hash)
-// 		bc.tip = newBlock.Hash
-// 		return nil
-// 	})
-// 	return nil
-// }
+	_ = s.db.Update(func(txn *badger.Txn) error {
+		_ = txn.Set(newBlock.Hash, newBlock.Serialize())
+		_ = txn.Set([]byte("last"), newBlock.Hash)
+		bc.Tip = newBlock.Hash
+		return nil
+	})
+	return nil
+}
 
 
 

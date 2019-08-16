@@ -24,7 +24,13 @@ func NewHTTPHandler(endpoints endpoints.Set) http.Handler {
 		endpoints.PrintBlockchainEndpoint,
 		decodeHTTPPrintBlockchainRequest,
 		encodeHTTPPrintBlockchainResponse,
-	))	
+	))
+	m.Handle("/AddBlock", httptransport.NewServer(
+		endpoints.AddBlockEndpoint,
+		decodeHTTPAddBlockRequest,
+		encodeHTTPAddBlockResponse,
+	))
+
 	return m
 }
 
@@ -78,4 +84,21 @@ func encodeHTTPPrintBlockchainResponse(ctx context.Context, w http.ResponseWrite
 	respBytes, _ := json.Marshal(response)
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	return json.NewEncoder(w).Encode(respBytes)
+}
+
+func decodeHTTPAddBlockRequest(_ context.Context, r *http.Request) (interface{}, error) {
+	var req endpoints.AddBlockRequest
+	err := json.NewDecoder(r.Body).Decode(&req)
+	return req, err
+}
+
+
+func encodeHTTPAddBlockResponse(ctx context.Context, w http.ResponseWriter, response interface{}) error {
+	if f, ok := response.(endpoint.Failer); ok && f.Failed() != nil {
+		return nil
+	}
+
+	// respBytes, _ := json.Marshal(response)
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	return json.NewEncoder(w).Encode(response)
 }
