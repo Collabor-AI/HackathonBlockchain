@@ -1,6 +1,6 @@
 ## HackathonBlockchain
 
-A small library in collaboration with https://github.com/topher-lo for future use as a backend framework in hackathons. The concept is to create a general-use blockchain that can store arbitrary data, but using 'Proof of Machine Learning' as a consensus mechanism, which is intended to utilise the blockchain to provide 'useful work'.
+A small library in collaboration with https://github.com/topher-lo for future use as a backend framework in hackathons. The concept is to create a general-use blockchain that can store arbitrary data, but using 'Proof of Machine Learning' (https://github.com/topher-lo/go-tofu)  as a consensus mechanism, which is intended to utilise the blockchain to provide 'useful work'.
 
 # Usage
 Use `go get` to install all dependencies
