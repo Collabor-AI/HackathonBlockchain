@@ -39,8 +39,8 @@ func New(svc services.Service) Set {
 	}
 }
 
-func (s Set) NewBlockchain(ctx context.Context, Dataset []byte, baseline float64) ([]byte, error){
-	resp, _ := s.NewBlockchainEndpoint(ctx, NewBlockchainRequest{Dataset, baseline})
+func (s Set) NewBlockchain(ctx context.Context, dataset services.Dataset, objective services.Objective) ([]byte, error){
+	resp, _ := s.NewBlockchainEndpoint(ctx, NewBlockchainRequest{dataset, objective})
 	response := resp.(NewBlockchainResponse)
 	log.Print("Endpoint: %+v",response)
 	return response.Blockchain, response.Err
@@ -49,7 +49,7 @@ func (s Set) NewBlockchain(ctx context.Context, Dataset []byte, baseline float64
 func MakeNewBlockchainEndpoint(s services.Service) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
 		req := request.(NewBlockchainRequest)
-		bc, err := s.NewBlockchain(ctx, services.InitData{req.Dataset,req.Baseline})
+		bc, err := s.NewBlockchain(ctx, services.InitData{req.Dataset,req.Objective})
 		bcData,_ := json.Marshal(bc.Tip)
 		return NewBlockchainResponse{Blockchain: bcData, Err: err}, nil
 	}
@@ -57,9 +57,11 @@ func MakeNewBlockchainEndpoint(s services.Service) endpoint.Endpoint {
 
 
 type NewBlockchainRequest struct {
-	Dataset []byte `json:"dataset"`
-	Baseline float64 `json:"baseline"`
+	Dataset services.Dataset `json:"dataset,omitempty"` 
+	Objective services.Objective `json:"objective,omitempty"`
+	
 }
+
 
 type NewBlockchainResponse struct {
 	Blockchain []byte `json:"blockchain"`

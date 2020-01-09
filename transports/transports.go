@@ -10,6 +10,7 @@ import (
 	httptransport "github.com/go-kit/kit/transport/http"
 	"HackathonBlockchain/endpoints"
 	"net/url"
+	"log"
 )
 
 
@@ -25,7 +26,7 @@ func NewHTTPHandler(endpoints endpoints.Set) http.Handler {
 		decodeHTTPPrintBlockchainRequest,
 		encodeHTTPPrintBlockchainResponse,
 	))
-	m.Handle("/AddBlock", httptransport.NewServer(
+	m.Handle("/addBlock/", httptransport.NewServer(
 		endpoints.AddBlockEndpoint,
 		decodeHTTPAddBlockRequest,
 		encodeHTTPAddBlockResponse,
@@ -54,6 +55,9 @@ type errorWrapper struct {
 
 func decodeHTTPNewBlockchainRequest(_ context.Context, r *http.Request) (interface{}, error) {
 	var req endpoints.NewBlockchainRequest
+	log.Print("%+v",r.Body)
+	fmt.Print("here")
+	log.Print("here")
 	err := json.NewDecoder(r.Body).Decode(&req)
 	return req, err
 }

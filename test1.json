@@ -1,0 +1,4 @@
+{
+	"dataset": {"method":"Kaggle","name":"mlg-ulb/creditcardfraud","description":"Kaggle Credit Card Dataset"},
+	"objective":{"baseline":0.5,"scoring":"roc"}
+}

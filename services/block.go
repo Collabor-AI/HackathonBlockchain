@@ -19,6 +19,7 @@ type Block struct {
 	PrevBlockHash []byte
 	Hash []byte
 	Nonce int
+	// Score int
 }
 
 type Blockchain struct {
@@ -34,9 +35,12 @@ func NewBlock(data []byte, prevBlockHash []byte) *Block {
 	}
 	pow := NewProofOfWork(block)
 	nonce, hash := pow.Run()
+	// poml := NewProofOfML(block)
+	// score,hash := poml.Run()
 
 	block.Hash = hash[:]
 	block.Nonce = nonce
+	// block.Score = score
 	return block
 }
 
