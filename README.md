@@ -7,22 +7,35 @@ Use `go get` to install all dependencies
 
 Run the server `go run main.go`
 
-Use `curl -d '$mydata' localhost:8081/$method` to call an API method
+Use `curl -d '$mydata' localhost:8081/{method}` to call an API method
 
+<<<<<<< HEAD
 # Implemented Features
 Create New Blockchain, Add Block, View Blockchain endpoints (still Proof Of Work)
 
+=======
+## Methods (Implemented)
+Create Blockchain
+>>>>>>> f10408b39d2fa7a93e5a490c73e6d388cd919b3a
+
+Add Block
+
+Print Blockchain
+
 
 # Development
+Added communicawtion with Flask microservice, which will facilitate ML operations
 
-Add decode/encode functions to transports/transport.go ; these specify how to read/send data from local to remote
+# To Do
+Improve data schema and block structure
 
-Add endpoints ; these are a connector between transports and your application
-
+<<<<<<< HEAD
 Add application logic to services/
 
 
 # Planned Features 
 use GRPC to call a Python microservice; the Python microservice will fetch a model from IPFS/Google cloud and execute it on and obfuscated/homomorphic encrypted validation set
 Replace PoW with PoML
+=======
+>>>>>>> f10408b39d2fa7a93e5a490c73e6d388cd919b3a
 Networking - use a Kafka cluster to provide message brokering as an initial step, then implement real P2P
