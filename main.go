@@ -21,16 +21,20 @@ import (
 func main(){
 
  	fs := flag.NewFlagSet("svc", flag.ExitOnError)
+
+ 	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8081"
+	}
+
+
 	var (
-		httpAddr       = fs.String("http-addr", "0.0.0.0:8081", "HTTP listen address")
+		httpAddr       = fs.String("http-addr", "0.0.0.0:"+port, "HTTP listen address")
 		//grpcAddr       = fs.String("grpc-addr", ":8082", "gRPC listen address")
 	)
 	fmt.Print(httpAddr)
 
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = "8081"
-	}
+	
 
 
 	db, err := badger.Open(badger.DefaultOptions("tmp/badger"))
