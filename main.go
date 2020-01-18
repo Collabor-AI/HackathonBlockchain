@@ -22,7 +22,7 @@ func main(){
 
  	fs := flag.NewFlagSet("svc", flag.ExitOnError)
 	var (
-		httpAddr       = fs.String("http-addr", ":8081", "HTTP listen address")
+		httpAddr       = fs.String("http-addr", "0.0.0.0:8081", "HTTP listen address")
 		//grpcAddr       = fs.String("grpc-addr", ":8082", "gRPC listen address")
 	)
 	fmt.Print(httpAddr)
