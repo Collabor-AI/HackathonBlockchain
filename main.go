@@ -25,7 +25,12 @@ func main(){
 		httpAddr       = fs.String("http-addr", ":8081", "HTTP listen address")
 		//grpcAddr       = fs.String("grpc-addr", ":8082", "gRPC listen address")
 	)
+	fmt.Print(httpAddr)
 
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8081"
+	}
 
 
 	db, err := badger.Open(badger.DefaultOptions("tmp/badger"))
