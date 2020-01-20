@@ -17,6 +17,7 @@ type Set struct {
 	NewBlockchainEndpoint endpoint.Endpoint
 	PrintBlockchainEndpoint endpoint.Endpoint
 	AddBlockEndpoint endpoint.Endpoint
+	GenerateAddressEndpoint endpoint.Endpoint
 }
 
 func New(svc services.Service) Set {
@@ -39,8 +40,8 @@ func New(svc services.Service) Set {
 	}
 }
 
-func (s Set) NewBlockchain(ctx context.Context, dataset services.Dataset, objective services.Objective) ([]byte, error){
-	resp, _ := s.NewBlockchainEndpoint(ctx, NewBlockchainRequest{dataset, objective})
+func (s Set) NewBlockchain(ctx context.Context, dataset services.Dataset, objective services.Objective, worldstate services.WorldState) ([]byte, error){
+	resp, _ := s.NewBlockchainEndpoint(ctx, NewBlockchainRequest{dataset, objective, worldstate})
 	response := resp.(NewBlockchainResponse)
 	log.Print("Endpoint: %+v",response)
 	return response.Blockchain, response.Err
@@ -49,7 +50,7 @@ func (s Set) NewBlockchain(ctx context.Context, dataset services.Dataset, object
 func MakeNewBlockchainEndpoint(s services.Service) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
 		req := request.(NewBlockchainRequest)
-		bc, err := s.NewBlockchain(ctx, services.InitData{req.Dataset,req.Objective})
+		bc, err := s.NewBlockchain(ctx, services.InitData{req.Dataset,req.Objective,req.WorldState})
 		bcData,_ := json.Marshal(bc.Tip)
 		return NewBlockchainResponse{Blockchain: bcData, Err: err}, nil
 	}
@@ -59,6 +60,7 @@ func MakeNewBlockchainEndpoint(s services.Service) endpoint.Endpoint {
 type NewBlockchainRequest struct {
 	Dataset services.Dataset `json:"dataset,omitempty"` 
 	Objective services.Objective `json:"objective,omitempty"`
+	WorldState services.WorldState `json:"worldstate,omitempty"`
 	
 }
 
@@ -112,10 +114,24 @@ func MakeAddBlockEndpoint(s services.Service) endpoint.Endpoint {
 	}
 }
 
+func GenerateAddressEndpoint(s services.Service) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
+		// err = s.GenerateAddress(ctx)
+		return GenerateAddressResponse{Err: err}, nil
+	}
+}
+
 type AddBlockRequest struct {
 	Md services.ModelData `json:"modelData"`
 }
 
 type AddBlockResponse struct {
+	Err error `json:"err,omitempty"`
+}
+
+type GenerateAddressRequest struct {
+}
+
+type GenerateAddressResponse struct{
 	Err error `json:"err,omitempty"`
 }

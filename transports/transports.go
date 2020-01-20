@@ -31,6 +31,11 @@ func NewHTTPHandler(endpoints endpoints.Set) http.Handler {
 		decodeHTTPAddBlockRequest,
 		encodeHTTPAddBlockResponse,
 	))
+	m.Handle("/generateAddress/", httptransport.NewServer(
+		endpoints.GenerateAddressEndpoint,
+		decodeHTTPGenerateAddressRequest,
+		encodeHTTPGenerateAddressResponse,
+	))
 
 	return m
 }
@@ -105,4 +110,21 @@ func encodeHTTPAddBlockResponse(ctx context.Context, w http.ResponseWriter, resp
 	// respBytes, _ := json.Marshal(response)
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	return json.NewEncoder(w).Encode(response)
+}
+
+
+
+func decodeHTTPGenerateAddressRequest(_ context.Context, r *http.Request) (interface{}, error) {
+	var req endpoints.GenerateAddressRequest
+	return req, nil
+}
+
+func encodeHTTPGenerateAddressResponse(ctx context.Context, w http.ResponseWriter, response interface{}) error {
+	if f, ok := response.(endpoint.Failer); ok && f.Failed() != nil {
+		return nil
+	}
+	fmt.Printf("Generate Address: %+v", response)
+	respBytes, _ := json.Marshal(response)
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	return json.NewEncoder(w).Encode(respBytes)
 }

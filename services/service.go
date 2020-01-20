@@ -9,7 +9,6 @@ import (
 	"github.com/dgraph-io/badger"
 	// "github.com/go-kit/kit/log"
 	"log"
-	
 	"strconv"
 )
 
@@ -18,6 +17,7 @@ type Service interface {
 	NewBlockchain(ctx context.Context, startingData InitData) (Blockchain, error)
 	AddBlock(ctx context.Context, md ModelData) (error)
 	PrintBlockchain(ctx context.Context) (*BlockchainIter, error)
+	GenerateAddress(ctx context.Context) 
 }
 
 func New(db *badger.DB) Service {
@@ -163,3 +163,6 @@ func (i *BlockchainIterator) Next(db *badger.DB) *Block {
 	return block
 }
 
+func (s basicService) GenerateAddress(ctx context.Context) {
+	return
+}
