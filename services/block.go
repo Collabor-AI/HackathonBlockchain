@@ -1,12 +1,15 @@
 package services
 import (
 	// 2
-	// "crypto/sha256"
+	"crypto/sha256"
 	"encoding/json"
+	"bytes"
+	"encoding/binary"
+	"math"
 	// "fmt"
 	// "github.com/dgraph-io/badger"
 	// "log"
-	// "strconv"
+	"strconv"
 	"fmt"
 	"time"
 	
@@ -25,22 +28,33 @@ type Block struct {
 type Blockchain struct {
 	Tip []byte	
 }
+
+func float64ToByte(f float64) []byte {
+   var buf [8]byte
+   binary.BigEndian.PutUint64(buf[:], math.Float64bits(f))
+   return buf[:]
+}
 	
-func NewBlock(data []byte, prevBlockHash []byte) *Block {
+func NewBlock(data []byte, poml float64, prevBlockHash []byte) *Block {
 	block := &Block{
 		Timestamp:time.Now().Unix(), 
 		Data: data,
 		PrevBlockHash:prevBlockHash,
 		Hash:[]byte{},
 	}
-	pow := NewProofOfWork(block)
-	nonce, hash := pow.Run()
-	// poml := NewProofOfML(block)
-	// score,hash := poml.Run()
 
+	hashData := bytes.Join(
+		[][]byte{
+			block.PrevBlockHash,
+			block.Data,
+			[]byte(strconv.FormatInt(block.Timestamp, 16)),
+			float64ToByte(poml),
+		},
+		[]byte{},
+	)
+
+	hash := sha256.Sum256(hashData)
 	block.Hash = hash[:]
-	block.Nonce = nonce
-	// block.Score = score
 	return block
 }
 
@@ -76,7 +90,7 @@ func NewBlock(data []byte, prevBlockHash []byte) *Block {
 func NewGenesisBlock(startingData InitData) *Block {
 	fmt.Printf("startingData is s %+v",startingData )
 	dataBytes,_ := json.Marshal(startingData)
-	return NewBlock(dataBytes, []byte{})
+	return NewBlock(dataBytes, startingData.Objective.Baseline,[]byte{})
 }
 
 func (b Block) Serialize() []byte{

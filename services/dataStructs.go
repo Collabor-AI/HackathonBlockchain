@@ -18,9 +18,14 @@ type Objective struct {
 	Scoring string `json:"scoring,omitempty"` //scoring method
 }
 
-type ModelData struct {
-	Model []byte `json:"model",omitempty`
-	Preds []byte `json:"preds",omitempty`
+type BlockData struct {
+	Address string `json:"address"`
+	Name string  `json:"name"`
+	Email string `json:"email"`
+	Preds []byte `json:"preds"`
+	LinkToCode string `json:"linkToCode,omitempty"`
+	Description string `json:"description,omitempty"`
+	PrivKey string `json:"privateKey"`
 }
 
 type WorldState struct {

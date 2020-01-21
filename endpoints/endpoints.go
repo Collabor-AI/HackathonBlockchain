@@ -97,8 +97,8 @@ type PrintBlockchainResponse struct {
 	Err error 
 }
 
-func (s Set) AddBlock(ctx context.Context, md services.ModelData) (error){
-	resp, err := s.AddBlockEndpoint(ctx, AddBlockRequest{Md:md})
+func (s Set) AddBlock(ctx context.Context, Address string, Name string, Email string, Preds []byte, LinkToCode string, Description string, PrivKey string, Score float64) (error){
+	resp, err := s.AddBlockEndpoint(ctx, AddBlockRequest{Address: Address, Name: Name, Email: Email, Preds: Preds, LinkToCode: LinkToCode, Description: Description, PrivKey: PrivKey, Score:Score})
 	if err != nil {
 		return err
 	}
@@ -109,7 +109,8 @@ func (s Set) AddBlock(ctx context.Context, md services.ModelData) (error){
 func MakeAddBlockEndpoint(s services.Service) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
 		req := request.(AddBlockRequest)
-		err = s.AddBlock(ctx, req.Md)
+		blockData := services.BlockData{req.Address, req.Name, req.Email, req.Preds, req.LinkToCode, req.Description, req.PrivKey}
+		err = s.AddBlock(ctx, blockData,  req.Score)
 		return AddBlockResponse{Err: err}, nil
 	}
 }
@@ -122,7 +123,14 @@ func GenerateAddressEndpoint(s services.Service) endpoint.Endpoint {
 }
 
 type AddBlockRequest struct {
-	Md services.ModelData `json:"modelData"`
+	Address string `json:"address"`
+	Name string  `json:"name"`
+	Email string `json:"email"`
+	Preds []byte `json:"preds"`
+	LinkToCode string `json:"linkToCode,omitempty"`
+	Description string `json:"description,omitempty"`
+	PrivKey string `json:"privateKey"`
+	Score float64 `json:"score"`
 }
 
 type AddBlockResponse struct {

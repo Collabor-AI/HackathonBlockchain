@@ -3,21 +3,26 @@ package services
 
 import (
 	"context"
+	"crypto/elliptic"
+	"crypto/ecdsa"
+	"crypto/rand"
+	"crypto/sha256"
+	"golang.org/x/crypto/ripemd160"
 	// "errors"
 	"encoding/json"
 	"fmt"
 	"github.com/dgraph-io/badger"
 	// "github.com/go-kit/kit/log"
 	"log"
-	"strconv"
+	// "strconv"
 )
 
 
 type Service interface {
 	NewBlockchain(ctx context.Context, startingData InitData) (Blockchain, error)
-	AddBlock(ctx context.Context, md ModelData) (error)
+	AddBlock(ctx context.Context, bd BlockData, poml float64) (error)
 	PrintBlockchain(ctx context.Context) (*BlockchainIter, error)
-	GenerateAddress(ctx context.Context) 
+	GenerateAddress(ctx context.Context)  (*Wallet, error)
 }
 
 func New(db *badger.DB) Service {
@@ -37,10 +42,12 @@ type basicService struct{
 }
 
 
-func (s basicService) AddBlock(ctx context.Context, md ModelData) error{
+func (s basicService) AddBlock(ctx context.Context, bd BlockData, poml float64) error{
+	//Check if there's an existing blockchain
 	bc,_ := s.NewBlockchain(ctx, InitData{})
 	var lastHash []byte
 
+	// retrieve end of blockchain from badger
 	_ = s.db.View(func(txn *badger.Txn) error {
 		item, _ := txn.Get([]byte("last"))
 
@@ -48,9 +55,11 @@ func (s basicService) AddBlock(ctx context.Context, md ModelData) error{
 		return nil
 	})
 
-	mdBytes,_ := json.Marshal(md)
-	newBlock := NewBlock(mdBytes,lastHash)
+	//create a new block
+	bdBytes,_ := json.Marshal(bd)
+	newBlock := NewBlock(bdBytes, poml, lastHash)
 
+	//insert into badger
 	_ = s.db.Update(func(txn *badger.Txn) error {
 		_ = txn.Set(newBlock.Hash, newBlock.Serialize())
 		_ = txn.Set([]byte("last"), newBlock.Hash)
@@ -63,7 +72,6 @@ func (s basicService) AddBlock(ctx context.Context, md ModelData) error{
 
 
 func (s basicService) NewBlockchain(ctx context.Context, startingData InitData) (Blockchain, error) {
-
 	var tip []byte
 	err := s.db.View(func(txn *badger.Txn) error {
 		item, err := txn.Get([]byte("last"))
@@ -110,8 +118,6 @@ func (s basicService) PrintBlockchain(ctx context.Context) (*BlockchainIter, err
 			fmt.Printf("Prev. hash: %x\n", block.PrevBlockHash)
 			fmt.Printf("Data: %+v\n", block.Data)
 			fmt.Printf("Hash: %x\n", block.Hash)
-			pow := NewProofOfWork(block)
-			fmt.Printf("PoW: %s\n", strconv.FormatBool(pow.Validate()))
 			break
 		}
 
@@ -120,8 +126,6 @@ func (s basicService) PrintBlockchain(ctx context.Context) (*BlockchainIter, err
 		fmt.Printf("Prev. hash: %x\n", block.PrevBlockHash)
 		fmt.Printf("Data: %s\n", block.Data)
 		fmt.Printf("Hash: %x\n", block.Hash)
-		pow := NewProofOfWork(block)
-		fmt.Printf("PoW: %s\n", strconv.FormatBool(pow.Validate()))
 		fmt.Println()
 
 	}
@@ -163,6 +167,58 @@ func (i *BlockchainIterator) Next(db *badger.DB) *Block {
 	return block
 }
 
-func (s basicService) GenerateAddress(ctx context.Context) {
-	return
+func NewKeyPair() (ecdsa.PrivateKey, []byte) {
+	curve := elliptic.P256()
+
+	private, err := ecdsa.GenerateKey(curve, rand.Reader)
+	if err != nil {
+		log.Panic(err)
+	}
+
+	pub := append(private.PublicKey.X.Bytes(), private.PublicKey.Y.Bytes()...)
+	return *private, pub
 }
+
+func PublicKeyHash(pubKey []byte) []byte {
+	pubHash := sha256.Sum256(pubKey)
+
+	hasher := ripemd160.New()
+	_, err := hasher.Write(pubHash[:])
+	if err != nil {
+		log.Panic(err)
+	}
+
+	publicRipMD := hasher.Sum(nil)
+
+	return publicRipMD
+}
+
+// func Checksum(payload []byte) []byte {
+// 	firstHash := sha256.Sum256(payload)
+// 	secondHash := sha256.Sum256(firstHash[:])
+
+// 	return secondHash[:checksumLength]
+// }
+
+// func ValidateAddress(address string) bool {
+// 	pubKeyHash := Base58Decode([]byte(address))
+// 	actualChecksum := pubKeyHash[len(pubKeyHash)-checksumLength:]
+// 	version := pubKeyHash[0]
+// 	pubKeyHash = pubKeyHash[1 : len(pubKeyHash)-checksumLength]
+// 	targetChecksum := Checksum(append([]byte{version}, pubKeyHash...))
+
+// 	return bytes.Compare(actualChecksum, targetChecksum) == 0
+// }
+
+func (s basicService) GenerateAddress(ctx context.Context) (*Wallet, error){
+	private, public := NewKeyPair()	
+	return &Wallet{private, public}, nil
+}
+
+type Wallet struct {
+	privKey ecdsa.PrivateKey
+	pubkey []byte
+}
+
+
+
