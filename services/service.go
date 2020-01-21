@@ -6,7 +6,7 @@ import (
 	"crypto/elliptic"
 	"crypto/ecdsa"
 	"crypto/rand"
-	"crypto/sha256"
+	// "crypto/sha256"
 	// "golang.org/x/crypto/ripemd160" 
 	// "errors"
 	"encoding/json"
