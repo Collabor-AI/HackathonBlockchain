@@ -97,7 +97,7 @@ type PrintBlockchainResponse struct {
 	Err error 
 }
 
-func (s Set) AddBlock(ctx context.Context, Address string, Name string, Email string, Preds []byte, LinkToCode string, Description string, PrivKey string, Score float64) (error){
+func (s Set) AddBlock(ctx context.Context, Address string, Name string, Email string, Preds string, LinkToCode string, Description string, PrivKey string, Score float64) (error){
 	resp, err := s.AddBlockEndpoint(ctx, AddBlockRequest{Address: Address, Name: Name, Email: Email, Preds: Preds, LinkToCode: LinkToCode, Description: Description, PrivKey: PrivKey, Score:Score})
 	if err != nil {
 		return err
@@ -126,7 +126,7 @@ type AddBlockRequest struct {
 	Address string `json:"address"`
 	Name string  `json:"name"`
 	Email string `json:"email"`
-	Preds []byte `json:"preds"`
+	Preds string `json:"preds"`
 	LinkToCode string `json:"linkToCode,omitempty"`
 	Description string `json:"description,omitempty"`
 	PrivKey string `json:"privateKey"`

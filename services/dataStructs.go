@@ -22,7 +22,7 @@ type BlockData struct {
 	Address string `json:"address"`
 	Name string  `json:"name"`
 	Email string `json:"email"`
-	Preds []byte `json:"preds"`
+	Preds string `json:"preds"`
 	LinkToCode string `json:"linkToCode,omitempty"`
 	Description string `json:"description,omitempty"`
 	PrivKey string `json:"privateKey"`
