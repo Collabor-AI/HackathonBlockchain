@@ -28,8 +28,8 @@ github.com/oklog/run
 github.com/pkg/errors
 # golang.org/x/crypto v0.0.0-20200117160349-530e935923ad
 golang.org/x/crypto/ripemd160
-# golang.org/x/net v0.0.0-20190620200207-3b0461eec859
+# golang.org/x/net v0.0.0-20200114155413-6afb5195e5aa
 golang.org/x/net/internal/timeseries
 golang.org/x/net/trace
-# golang.org/x/sys v0.0.0-20190626221950-04f50cda93cb
+# golang.org/x/sys v0.0.0-20200120151820-655fe14d7479
 golang.org/x/sys/unix
