@@ -29,7 +29,8 @@ func main(){
 
 
 	var (
-		httpAddr       = fs.String("http-addr", "0.0.0.0:"+port, "HTTP listen address")
+		httpAddr       = fs.String("http-addr", ":"+port, "HTTP listen address")
+		// httpAddr       = fs.String("http-addr", "0.0.0.0:"+port, "HTTP listen address")
 		//grpcAddr       = fs.String("grpc-addr", ":8082", "gRPC listen address")
 	)
 	fmt.Print(httpAddr)

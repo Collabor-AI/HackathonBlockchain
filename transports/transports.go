@@ -97,7 +97,10 @@ func encodeHTTPPrintBlockchainResponse(ctx context.Context, w http.ResponseWrite
 
 func decodeHTTPAddBlockRequest(_ context.Context, r *http.Request) (interface{}, error) {
 	var req endpoints.AddBlockRequest
+	log.Printf("%+v",r.Body)
+	log.Print("here1")
 	err := json.NewDecoder(r.Body).Decode(&req)
+	log.Printf("%+v",req)
 	return req, err
 }
 
