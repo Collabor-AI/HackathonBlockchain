@@ -109,6 +109,7 @@ func (s Set) AddBlock(ctx context.Context, Address string, Name string, Email st
 func MakeAddBlockEndpoint(s services.Service) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
 		req := request.(AddBlockRequest)
+		fmt.Printf("AddBlockRequest : %+v",req)
 		blockData := services.BlockData{req.Address, req.Name, req.Email, req.Preds, req.LinkToCode, req.Description, req.PrivKey}
 		err = s.AddBlock(ctx, blockData,  req.Score)
 		return AddBlockResponse{Err: err}, nil
