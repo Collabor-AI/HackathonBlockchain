@@ -1,5 +1,3 @@
-// +heroku install
-
 module HackathonBlockchain
 
 go 1.13
