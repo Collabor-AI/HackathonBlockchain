@@ -7,7 +7,7 @@ import (
 	"crypto/ecdsa"
 	"crypto/rand"
 	"crypto/sha256"
-	"golang.org/x/crypto/ripemd160" 
+	// "golang.org/x/crypto/ripemd160" 
 	// "errors"
 	"encoding/json"
 	"fmt"
@@ -179,19 +179,19 @@ func NewKeyPair() (ecdsa.PrivateKey, []byte) {
 	return *private, pub
 }
 
-func PublicKeyHash(pubKey []byte) []byte {
-	pubHash := sha256.Sum256(pubKey)
+// func PublicKeyHash(pubKey []byte) []byte {
+// 	pubHash := sha256.Sum256(pubKey)
 
-	hasher := ripemd160.New()
-	_, err := hasher.Write(pubHash[:])
-	if err != nil {
-		log.Panic(err)
-	}
+// 	hasher := ripemd160.New()
+// 	_, err := hasher.Write(pubHash[:])
+// 	if err != nil {
+// 		log.Panic(err)
+// 	}
 
-	publicRipMD := hasher.Sum(nil)
+// 	publicRipMD := hasher.Sum(nil)
 
-	return publicRipMD
-}
+// 	return publicRipMD
+// }
 
 // func Checksum(payload []byte) []byte {
 // 	firstHash := sha256.Sum256(payload)
