@@ -1,6 +1,31 @@
 {
 	"comment": "",
 	"ignore": "test",
-	"package": [],
+	"package": [
+		{
+			"checksumSHA1": "gVRtzbb4uSRekBFLjz3m1cwHc0I=",
+			"path": "github.com/mr-tron/base58",
+			"revision": "b1dd383fd2c02d7933db93f157e339f1899b5163",
+			"revisionTime": "2019-11-21T09:29:36Z"
+		},
+		{
+			"checksumSHA1": "UAbH5s3v5AfEvbGMEQAyzSFCMU0=",
+			"path": "golang.org/x/crypto/ripemd160",
+			"revision": "69ecbb4d6d5dab05e49161c6e77ea40a030884e1",
+			"revisionTime": "2020-01-22T21:59:53Z"
+		},
+		{
+			"checksumSHA1": "f51w0wL7u9Hy2kRebKr+x71HWm0=",
+			"path": "golang.org/x/crypto/sha3",
+			"revision": "69ecbb4d6d5dab05e49161c6e77ea40a030884e1",
+			"revisionTime": "2020-01-22T21:59:53Z"
+		},
+		{
+			"checksumSHA1": "SgzQq2pml7vtri6a642urqIE9R8=",
+			"path": "golang.org/x/sys/cpu",
+			"revision": "d101bd2416d505c0448a6ce8a282482678040a89",
+			"revisionTime": "2020-02-02T16:37:14Z"
+		}
+	],
 	"rootPath": "HackathonBlockchain"
 }
