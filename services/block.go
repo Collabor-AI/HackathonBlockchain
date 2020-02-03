@@ -21,7 +21,7 @@ type Block struct {
 	Data []byte
 	PrevBlockHash []byte
 	Hash []byte
-	Nonce int
+	Nonce float64
 	// Score int
 }
 
@@ -41,6 +41,7 @@ func NewBlock(data []byte, poml float64, prevBlockHash []byte) *Block {
 		Data: data,
 		PrevBlockHash:prevBlockHash,
 		Hash:[]byte{},
+		Nonce: poml,
 	}
 
 	hashData := bytes.Join(

@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"github.com/go-kit/kit/endpoint"
 	"fmt"
-	// "github.com/dgraph-io/badger"
 	"log"
 
 	"HackathonBlockchain/services"
@@ -33,10 +32,15 @@ func New(svc services.Service) Set {
 	{
 		addBlockEndpoint = MakeAddBlockEndpoint(svc)
 	}
+	var generateAddressEndpoint endpoint.Endpoint
+	{
+		generateAddressEndpoint = MakeGenerateAddressEndpoint(svc)
+	}
 	return Set {
 		NewBlockchainEndpoint: newBlockchainEndpoint,
 		PrintBlockchainEndpoint: printBlockchainEndpoint,
 		AddBlockEndpoint: addBlockEndpoint,
+		GenerateAddressEndpoint: generateAddressEndpoint,
 	}
 }
 
@@ -57,18 +61,7 @@ func MakeNewBlockchainEndpoint(s services.Service) endpoint.Endpoint {
 }
 
 
-type NewBlockchainRequest struct {
-	Dataset services.Dataset `json:"dataset,omitempty"` 
-	Objective services.Objective `json:"objective,omitempty"`
-	WorldState services.WorldState `json:"worldstate,omitempty"`
-	
-}
 
-
-type NewBlockchainResponse struct {
-	Blockchain []byte `json:"blockchain"`
-	Err error `json:"err,omitempty"`
-}
 
 
 func (s Set) PrintBlockchain(ctx context.Context) ([]byte, error){
@@ -87,14 +80,6 @@ func MakePrintBlockchainEndpoint(s services.Service) endpoint.Endpoint {
 		bciData, _ := json.Marshal(bci.Blocks)
 		return PrintBlockchainResponse{BlockchainIter: bciData, Err: err}, nil
 	}
-}
-
-type PrintBlockchainRequest struct {
-}
-
-type PrintBlockchainResponse struct {
-	BlockchainIter []byte 
-	Err error 
 }
 
 func (s Set) AddBlock(ctx context.Context, Address string, Name string, Email string, Preds string, LinkToCode string, Description string, PrivKey string, Score float64) (error){
@@ -116,11 +101,48 @@ func MakeAddBlockEndpoint(s services.Service) endpoint.Endpoint {
 	}
 }
 
-func GenerateAddressEndpoint(s services.Service) endpoint.Endpoint {
-	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
-		// err = s.GenerateAddress(ctx)
-		return GenerateAddressResponse{Err: err}, nil
+
+func (s Set) GenerateAddress(ctx context.Context) ([]byte, error){
+	resp, err := s.GenerateAddressEndpoint(ctx, GenerateAddressRequest{})
+	if err != nil {
+		return  nil, err
 	}
+	response := resp.(GenerateAddressResponse)
+	fmt.Printf("Response is %+v", response)
+	return response.Wallet, response.Err
+}
+
+func MakeGenerateAddressEndpoint(s services.Service) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
+		wallet, err := s.GenerateAddress(ctx)
+		fmt.Printf("'Endpoints':%+v",wallet)
+		walletData, _ := json.Marshal(wallet)
+
+		return GenerateAddressResponse{Wallet: walletData, Err: err}, nil
+	}
+}
+
+
+
+type NewBlockchainRequest struct {
+	Dataset services.Dataset `json:"dataset,omitempty"` 
+	Objective services.Objective `json:"objective,omitempty"`
+	WorldState services.WorldState `json:"worldstate,omitempty"`
+	
+}
+
+
+type NewBlockchainResponse struct {
+	Blockchain []byte `json:"blockchain"`
+	Err error `json:"err,omitempty"`
+}
+
+type PrintBlockchainRequest struct {
+}
+
+type PrintBlockchainResponse struct {
+	BlockchainIter []byte 
+	Err error 
 }
 
 type AddBlockRequest struct {
@@ -142,5 +164,6 @@ type GenerateAddressRequest struct {
 }
 
 type GenerateAddressResponse struct{
+	Wallet []byte `json:"wallet"`
 	Err error `json:"err,omitempty"`
 }

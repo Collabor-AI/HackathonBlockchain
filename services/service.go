@@ -6,15 +6,24 @@ import (
 	"crypto/elliptic"
 	"crypto/ecdsa"
 	"crypto/rand"
-	// "crypto/sha256"
-	// "golang.org/x/crypto/ripemd160" 
-	// "errors"
+	"crypto/sha256"
+	"github.com/mr-tron/base58"
+	"golang.org/x/crypto/ripemd160" 
+	"golang.org/x/crypto/sha3"
+	"encoding/hex"
+	"crypto/x509"
+	"encoding/pem"
 	"encoding/json"
 	"fmt"
 	"github.com/dgraph-io/badger"
 	// "github.com/go-kit/kit/log"
 	"log"
 	// "strconv"
+)
+
+const (
+	checksumLength = 4
+	version        = byte(0x00)
 )
 
 
@@ -179,26 +188,21 @@ func NewKeyPair() (ecdsa.PrivateKey, []byte) {
 	return *private, pub
 }
 
-// func PublicKeyHash(pubKey []byte) []byte {
-// 	pubHash := sha256.Sum256(pubKey)
+func PublicKeyHash(pubKey []byte) []byte {
+	pubHash := sha256.Sum256(pubKey)
 
-// 	hasher := ripemd160.New()
-// 	_, err := hasher.Write(pubHash[:])
-// 	if err != nil {
-// 		log.Panic(err)
-// 	}
+	hasher := ripemd160.New()
+	_, err := hasher.Write(pubHash[:])
+	if err != nil {
+		log.Panic(err)
+	}
 
-// 	publicRipMD := hasher.Sum(nil)
+	publicRipMD := hasher.Sum(nil)
 
-// 	return publicRipMD
-// }
+	return publicRipMD
+}	
 
-// func Checksum(payload []byte) []byte {
-// 	firstHash := sha256.Sum256(payload)
-// 	secondHash := sha256.Sum256(firstHash[:])
 
-// 	return secondHash[:checksumLength]
-// }
 
 // func ValidateAddress(address string) bool {
 // 	pubKeyHash := Base58Decode([]byte(address))
@@ -210,15 +214,95 @@ func NewKeyPair() (ecdsa.PrivateKey, []byte) {
 // 	return bytes.Compare(actualChecksum, targetChecksum) == 0
 // }
 
+
+func Checksum(payload []byte) []byte {
+	firstHash := sha256.Sum256(payload)
+	secondHash := sha256.Sum256(firstHash[:])
+
+	return secondHash[:checksumLength]
+}
+
+
+func Base58Encode(input []byte) []byte {
+	encode := base58.Encode(input)
+
+	return []byte(encode)
+}
+
+func Base58Decode(input []byte) []byte {
+	decode, err := base58.Decode(string(input[:]))
+	if err != nil {
+		log.Panic(err)
+	}
+
+	return decode
+}
+
+func encode(privateKey *ecdsa.PrivateKey, publicKey *ecdsa.PublicKey) (string, string) {
+    x509Encoded, _ := x509.MarshalECPrivateKey(privateKey)
+    pemEncoded := pem.EncodeToMemory(&pem.Block{Type: "PRIVATE KEY", Bytes: x509Encoded})
+
+    x509EncodedPub, _ := x509.MarshalPKIXPublicKey(publicKey)
+    pemEncodedPub := pem.EncodeToMemory(&pem.Block{Type: "PUBLIC KEY", Bytes: x509EncodedPub})
+
+    return string(pemEncoded), string(pemEncodedPub)
+}
+
+func decode(pemEncoded string, pemEncodedPub string) (*ecdsa.PrivateKey, *ecdsa.PublicKey) {
+    block, _ := pem.Decode([]byte(pemEncoded))
+    x509Encoded := block.Bytes
+    privateKey, _ := x509.ParseECPrivateKey(x509Encoded)
+
+    blockPub, _ := pem.Decode([]byte(pemEncodedPub))
+    x509EncodedPub := blockPub.Bytes
+    genericPublicKey, _ := x509.ParsePKIXPublicKey(x509EncodedPub)
+    publicKey := genericPublicKey.(*ecdsa.PublicKey)
+
+    return privateKey, publicKey
+}
+
+func Keccak256(data ...[]byte) []byte {
+	d := sha3.NewLegacyKeccak256()
+	for _, b := range data {
+		d.Write(b)
+	}
+	return d.Sum(nil)
+}
+
 func (s basicService) GenerateAddress(ctx context.Context) (*Wallet, error){
-	private, public := NewKeyPair()	
-	return &Wallet{private, public}, nil
+	privateKey, _ := ecdsa.GenerateKey(elliptic.P384(), rand.Reader)
+    publicKey := &privateKey.PublicKey
+    encPriv, encPub := encode(privateKey, publicKey)
+
+
+
+    pubKeyBytes := elliptic.Marshal(elliptic.P384(), publicKey.X, publicKey.Y)
+    address := "0x" + hex.EncodeToString(Keccak256(pubKeyBytes[1:])[12:]) 
+
+
+
+	// pubHash := PublicKeyHash(public)
+
+	// versionedHash := append([]byte{version}, pubHash...)
+	// checksum := Checksum(versionedHash)
+
+	// fullHash := append(versionedHash, checksum...)
+	// address := Base58Encode(fullHash)
+
+
+	// privateKeyBytes, publicKeyBytes := encode(private, public)
+	wallet := Wallet{encPriv, encPub, address}
+	// fmt.Printf("Service: %+v\n",wallet)
+
+	return &wallet, nil
 }
 
 type Wallet struct {
-	privKey ecdsa.PrivateKey
-	pubkey []byte
+	PrivateKey string `json:"privateKey"`
+	PubKey string `json:"pubKey"`
+	Address string `json:"address"`
 }
+
 
 
 
