@@ -1,10 +1,10 @@
 package services
 
-type InitData struct {
-	Dataset Dataset `json:"dataset,omitempty"` 
-	Objective Objective `json:"objective,omitempty"`
-	WorldState WorldState `json:"worldstate,omitempty"`
-}
+/*
+
+The structs are arranged in a bottom-up order 
+
+*/
 
 type Dataset struct {
 	TrainURL string `json:"trainURL,omitempty"`
@@ -18,6 +18,16 @@ type Objective struct {
 	Scoring string `json:"scoring,omitempty"` //scoring method
 }
 
+type WorldState struct {
+	EnsembleMethod string `json:"ensembleMethod,omitempty"`
+}
+
+type InitData struct {
+	Dataset Dataset `json:"dataset,omitempty"` 
+	Objective Objective `json:"objective,omitempty"`
+	WorldState WorldState `json:"worldstate,omitempty"`
+}
+
 type BlockData struct {
 	Address string `json:"address"`
 	Name string  `json:"name"`
@@ -28,6 +38,31 @@ type BlockData struct {
 	PrivKey string `json:"privateKey"`
 }
 
-type WorldState struct {
-	EnsembleMethod string `json:"ensembleMethod,omitempty"`
+type Wallet struct {
+	PrivateKey string `json:"privateKey"`
+	PubKey string `json:"pubKey"`
+	Address string `json:"address"`
+}
+
+type Block struct {
+	Timestamp int64
+	Data []byte
+	PrevBlockHash []byte
+	Hash []byte
+	Nonce float64
+	// Score int
+}
+
+type Blockchain struct {
+	Tip []byte	
+}
+
+type BlockchainIter struct {
+	Blocks [][]byte `json:"blocks"`
+}
+
+
+type BlockchainIterator struct {
+	currentHash []byte
+	// db *badger.DB
 }
