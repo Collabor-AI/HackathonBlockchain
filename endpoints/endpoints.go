@@ -4,6 +4,7 @@ package endpoints
 import (
 	"context"
 	"encoding/json"
+	// "encoding/base64"
 	"github.com/go-kit/kit/endpoint"
 	"fmt"
 	"log"
@@ -64,8 +65,9 @@ func MakeNewBlockchainEndpoint(s services.Service) endpoint.Endpoint {
 
 
 
-func (s Set) PrintBlockchain(ctx context.Context) ([]byte, error){
-	resp, err := s.PrintBlockchainEndpoint(ctx, PrintBlockchainRequest{})
+func (s Set) PrintBlockchain(ctx context.Context, Hash string ) ([]byte, error){
+
+	resp, err := s.PrintBlockchainEndpoint(ctx, PrintBlockchainRequest{Hash:Hash})
 	if err != nil {
 		return  nil, err
 	}
@@ -76,14 +78,15 @@ func (s Set) PrintBlockchain(ctx context.Context) ([]byte, error){
 
 func MakePrintBlockchainEndpoint(s services.Service) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
-		bci, err := s.PrintBlockchain(ctx)
+		req := request.(PrintBlockchainRequest)
+		bci, err := s.PrintBlockchain(ctx, req.Hash)
 		bciData, _ := json.Marshal(bci.Blocks)
 		return PrintBlockchainResponse{BlockchainIter: bciData, Err: err}, nil
 	}
 }
 
-func (s Set) AddBlock(ctx context.Context, Address string, Name string, Email string, Preds string, LinkToCode string, Description string, PrivKey string, Score float64) (error){
-	resp, err := s.AddBlockEndpoint(ctx, AddBlockRequest{Address: Address, Name: Name, Email: Email, Preds: Preds, LinkToCode: LinkToCode, Description: Description, PrivKey: PrivKey, Score:Score})
+func (s Set) AddBlock(ctx context.Context, PubKey string, Email string, Preds string,TrainPreds string, Description string, PrivKey string, Score float64, Hash string) (error){
+	resp, err := s.AddBlockEndpoint(ctx, AddBlockRequest{PubKey:PubKey, Email: Email, TrainPreds: TrainPreds, Preds: Preds, Description: Description, PrivKey: PrivKey, Score:Score, Hash:Hash})
 	if err != nil {
 		return err
 	}
@@ -95,8 +98,8 @@ func MakeAddBlockEndpoint(s services.Service) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
 		req := request.(AddBlockRequest)
 		log.Print("Endpoint - AddBlockRequest : %+v",req)
-		blockData := services.BlockData{Address:req.Address, Name:req.Name, Email:req.Email, Preds:req.Preds, LinkToCode:req.LinkToCode, Description:req.Description, PrivKey:req.PrivKey}
-		err = s.AddBlock(ctx, blockData,  req.Score)
+		blockData := services.BlockData{Email:req.Email, Preds:req.Preds, TrainPreds:req.TrainPreds, Description:req.Description}
+		err = s.AddBlock(ctx, blockData,  req.Score, req.PubKey, req.PrivKey, req.Hash)
 		return AddBlockResponse{Err: err}, nil
 	}
 }
@@ -138,6 +141,7 @@ type NewBlockchainResponse struct {
 }
 
 type PrintBlockchainRequest struct {
+	Hash string `json:"hash"`
 }
 
 type PrintBlockchainResponse struct {
@@ -146,14 +150,14 @@ type PrintBlockchainResponse struct {
 }
 
 type AddBlockRequest struct {
-	Address string `json:"address"`
-	Name string  `json:"name"`
+	PubKey string `json:"pubKey"`
 	Email string `json:"email"`
+	TrainPreds string `json:"trainPreds"`
 	Preds string `json:"preds"`
-	LinkToCode string `json:"linkToCode,omitempty"`
 	Description string `json:"description,omitempty"`
 	PrivKey string `json:"privateKey"`
 	Score float64 `json:"score"`
+	Hash string `json:"hash"`
 }
 
 type AddBlockResponse struct {

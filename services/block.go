@@ -71,11 +71,13 @@ func (bc *Blockchain) Iterator() *BlockchainIterator {
 }
 
 
-func (i *BlockchainIterator) Next(db *badger.DB) *Block {
+func (i *BlockchainIterator) Next(db *badger.DB, name string) *Block {
 	var block *Block
 
 	_ = db.View(func(txn *badger.Txn) error {
-		item, err := txn.Get(i.currentHash)
+		key := append([]byte(name),[]byte("-")...)
+		key = append(key,i.currentHash...)
+		item, err := txn.Get(key)
 		if err != nil {
 			log.Print("Failed to find", err)
 		}

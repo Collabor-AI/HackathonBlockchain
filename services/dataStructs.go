@@ -28,14 +28,26 @@ type InitData struct {
 	WorldState WorldState `json:"worldstate,omitempty"`
 }
 
+type Transaction struct{
+	ID []byte
+	Vin []TxInput
+	Vout TxOutput
+}
+
+type TxInput struct{
+	TxID []byte
+}
+
+type TxOutput struct{
+	Data []byte
+}
+
 type BlockData struct {
 	Address string `json:"address"`
-	Name string  `json:"name"`
 	Email string `json:"email"`
+	TrainPreds string `json:"trainPreds"`
 	Preds string `json:"preds"`
-	LinkToCode string `json:"linkToCode,omitempty"`
 	Description string `json:"description,omitempty"`
-	PrivKey string `json:"privateKey"`
 }
 
 type Wallet struct {
