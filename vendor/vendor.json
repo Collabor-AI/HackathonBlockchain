@@ -5,6 +5,12 @@
 		{
 			"path": "github.com/mr-tron/base5",
 			"revision": ""
+		},
+		{
+			"checksumSHA1": "gVRtzbb4uSRekBFLjz3m1cwHc0I=",
+			"path": "github.com/mr-tron/base58",
+			"revision": "b1dd383fd2c02d7933db93f157e339f1899b5163",
+			"revisionTime": "2019-11-21T09:29:36Z"
 		}
 	],
 	"rootPath": "HackathonBlockchain"
