@@ -18,6 +18,7 @@ type Set struct {
 	PrintBlockchainEndpoint endpoint.Endpoint
 	AddBlockEndpoint endpoint.Endpoint
 	GenerateAddressEndpoint endpoint.Endpoint
+	PrintLeaderBoardEndpoint endpoint.Endpoint
 }
 
 func New(svc services.Service) Set {
@@ -37,11 +38,16 @@ func New(svc services.Service) Set {
 	{
 		generateAddressEndpoint = MakeGenerateAddressEndpoint(svc)
 	}
+	var printLeaderBoardEndpoint endpoint.Endpoint
+	{
+		printLeaderBoardEndpoint = MakePrintLeaderBoardEndpoint(svc)
+	}
 	return Set {
 		NewBlockchainEndpoint: newBlockchainEndpoint,
 		PrintBlockchainEndpoint: printBlockchainEndpoint,
 		AddBlockEndpoint: addBlockEndpoint,
 		GenerateAddressEndpoint: generateAddressEndpoint,
+		PrintLeaderBoardEndpoint: printLeaderBoardEndpoint,
 	}
 }
 
@@ -125,6 +131,26 @@ func MakeGenerateAddressEndpoint(s services.Service) endpoint.Endpoint {
 	}
 }
 
+func (s Set) PrintLeaderBoard(ctx context.Context, Hash string ) ([]byte, error){
+	resp, err := s.PrintLeaderBoardEndpoint(ctx, PrintLeaderBoardRequest{Hash:Hash})
+	if err != nil {
+		return  nil, err
+	}
+	response := resp.(PrintLeaderBoardResponse)
+	fmt.Printf("Response is %+v", response)
+	return response.LeaderBoard, response.Err
+}
+
+func MakePrintLeaderBoardEndpoint(s services.Service) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
+		req := request.(PrintLeaderBoardRequest)
+		leaderboard, err := s.PrintLeaderBoard(ctx, req.Hash)
+		fmt.Printf("Endpoints: hash %+v",req.Hash)
+		leaderboardData, _ := json.Marshal(leaderboard)
+		return PrintLeaderBoardResponse{LeaderBoard: leaderboardData, Err: err}, nil
+	}
+}
+
 
 
 type NewBlockchainRequest struct {
@@ -145,8 +171,17 @@ type PrintBlockchainRequest struct {
 }
 
 type PrintBlockchainResponse struct {
-	BlockchainIter []byte 
-	Err error 
+	BlockchainIter []byte  `json:"blockchain"`
+	Err error  `json:"err,omitempty"`
+}
+
+type PrintLeaderBoardRequest struct {
+	Hash string `json:"hash"`
+}
+
+type PrintLeaderBoardResponse struct {
+	LeaderBoard []byte  `json:"leaderboard"`
+	Err error  `json:"err,omitempty"`
 }
 
 type AddBlockRequest struct {

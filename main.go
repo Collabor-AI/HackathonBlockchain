@@ -1,12 +1,19 @@
 package main
 //https://github.com/go-kit/kit/blob/master/examples/addsvc/cmd/addsvc/addsvc.go
 import (
+	"context"
 	"github.com/dgraph-io/badger"
 	"github.com/go-kit/kit/log"
 	"flag"
 	"github.com/oklog/oklog/pkg/group"
 	"fmt"
 	// "log"
+	firebase "firebase.google.com/go"
+	firebaseDB "firebase.google.com/go/db"
+	// "firebase.google.com/go/auth"
+
+	"google.golang.org/api/option"
+
 	"net"
 	"net/http"
 	"os"
@@ -28,6 +35,8 @@ func main(){
 	}
 
 
+
+
 	var (
 		httpAddr       = fs.String("http-addr", ":"+port, "HTTP listen address")
 		// httpAddr       = fs.String("http-addr", "0.0.0.0:"+port, "HTTP listen address")
@@ -35,7 +44,18 @@ func main(){
 	)
 	fmt.Print(httpAddr)
 
-	
+	config := &firebase.Config{
+	  DatabaseURL: "https://block-8f42c.firebaseio.com/",
+	}
+
+	opt := option.WithCredentialsFile("block-8f42c-firebase-adminsdk-5xrxz-0c78a97fb6.json")
+	ctx := context.Background()
+	app, err := firebase.NewApp(ctx, config, opt)
+	if err != nil {
+	  fmt.Errorf("error initializing app: %v", err)
+	}
+	var client *firebaseDB.Client
+	client,err = app.Database(ctx)
 
 
 	db, err := badger.Open(badger.DefaultOptions("tmp/badger"))
@@ -45,7 +65,7 @@ func main(){
  	defer db.Close()
  
 	var (
-		service        = services.New(db)
+		service        = services.New(db, app, client)
 		endpoints      = endpoints.New(service)
 		httpHandler    = transports.NewHTTPHandler(endpoints)
 		// grpcServer     = addtransport.NewGRPCServer(endpoints, tracer, zipkinTracer, logger)

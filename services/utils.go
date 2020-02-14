@@ -88,14 +88,10 @@ func decode(pemEncoded string, pemEncodedPub string) (*ecdsa.PrivateKey, *ecdsa.
     block, _ := pem.Decode([]byte(pemEncoded))
     x509Encoded := block.Bytes
     privateKey, _ := x509.ParseECPrivateKey(x509Encoded)
-
     blockPub, _ := pem.Decode([]byte(pemEncodedPub))
     x509EncodedPub := blockPub.Bytes
-    log.Print("this5")
     genericPublicKey, _ := x509.ParsePKIXPublicKey(x509EncodedPub)
-    log.Print("this6")
     publicKey := genericPublicKey.(*ecdsa.PublicKey)
-    log.Print("this7")
 
     return privateKey, publicKey
 }

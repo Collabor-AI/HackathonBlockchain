@@ -36,6 +36,11 @@ func NewHTTPHandler(endpoints endpoints.Set) http.Handler {
 		decodeHTTPGenerateAddressRequest,
 		encodeHTTPGenerateAddressResponse,
 	))
+	m.Handle("/printLeaderBoard/", httptransport.NewServer(
+		endpoints.PrintLeaderBoardEndpoint,
+		decodeHTTPPrintLeaderBoardRequest,
+		encodeHTTPPrintLeaderBoardResponse,
+	))
 
 	return m
 }
@@ -125,6 +130,21 @@ func encodeHTTPGenerateAddressResponse(ctx context.Context, w http.ResponseWrite
 		return nil
 	}
 	fmt.Printf("Generate Address: %+v", response)
+	respBytes, _ := json.Marshal(response)
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	return json.NewEncoder(w).Encode(respBytes)
+}
+
+func decodeHTTPPrintLeaderBoardRequest(_ context.Context, r *http.Request) (interface{}, error) {
+	var req endpoints.PrintLeaderBoardRequest
+	err := json.NewDecoder(r.Body).Decode(&req)
+	return req, err
+}
+
+func encodeHTTPPrintLeaderBoardResponse(ctx context.Context, w http.ResponseWriter, response interface{}) error {
+	if f, ok := response.(endpoint.Failer); ok && f.Failed() != nil {
+		return nil
+	}
 	respBytes, _ := json.Marshal(response)
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	return json.NewEncoder(w).Encode(respBytes)

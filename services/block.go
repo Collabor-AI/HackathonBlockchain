@@ -1,13 +1,16 @@
 package services
 import (
 	// 2
+	"context"
 	"crypto/sha256"
 	"encoding/json"
 	"bytes"
 	"encoding/binary"
+	"encoding/base64"
 	"math"
 	// "fmt"
 	"github.com/dgraph-io/badger"
+	firebaseDB "firebase.google.com/go/db"
 	"log"
 	"strconv"
 	"fmt"
@@ -60,9 +63,14 @@ func (b Block) Serialize() []byte{
 
 func DeserializeBlock(d []byte) *Block{
 	var block Block
-	_ = json.Unmarshal(d,&block)
-
-	return &block
+	err := json.Unmarshal(d,&block)
+	if err != nil {
+		return &block	
+	} else {
+		fmt.Printf("Err %v", err)
+		return nil
+	}
+	
 }
 
 func (bc *Blockchain) Iterator() *BlockchainIterator {
@@ -71,22 +79,36 @@ func (bc *Blockchain) Iterator() *BlockchainIterator {
 }
 
 
-func (i *BlockchainIterator) Next(db *badger.DB, name string) *Block {
+func (i *BlockchainIterator) Next(db *badger.DB, client *firebaseDB.Client, ctx context.Context, name string) *Block {
 	var block *Block
 
-	_ = db.View(func(txn *badger.Txn) error {
-		key := append([]byte(name),[]byte("-")...)
-		key = append(key,i.currentHash...)
-		item, err := txn.Get(key)
-		if err != nil {
-			log.Print("Failed to find", err)
-		}
-		encodedBlock, _ := item.ValueCopy(nil)
-		block = DeserializeBlock(encodedBlock)
+	// _ = db.View(func(txn *badger.Txn) error {
+	// 	key := append([]byte(name),[]byte("-")...)
+	// 	key = append(key,i.currentHash...)
+	// 	item, err := txn.Get(key)
+	// 	if err != nil {
+	// 		log.Print("Failed to find", err)
+	// 	}
+	// 	encodedBlock, _ := item.ValueCopy(nil)
+	// 	block = DeserializeBlock(encodedBlock)
 
-		return nil
-	})
+	// 	return nil
+	// })
 
+
+	//get name-lastHash from firebase
+
+	// var encodedBlockRaw []byte
+
+	key := base64.StdEncoding.EncodeToString(i.currentHash)
+	fmt.Printf("KEY IS : %v",key)
+	if err := client.NewRef(key).Get(ctx, &block); err != nil {
+		// encodedBlock, _ := base64.StdEncoding.DecodeString(string(encodedBlockRaw))
+	 //  block = DeserializeBlock(encodedBlock)
+	  log.Print(err)
+	  fmt.Print("BLOCK: Failed to get lastHash from firebase\n")
+	}
+		
 	i.currentHash = block.PrevBlockHash
 
 	return block
