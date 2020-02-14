@@ -17,6 +17,18 @@
 			"path": "github.com/mr-tron/base58",
 			"revision": "b1dd383fd2c02d7933db93f157e339f1899b5163",
 			"revisionTime": "2019-11-21T09:29:36Z"
+		},
+		{
+			"checksumSHA1": "UAbH5s3v5AfEvbGMEQAyzSFCMU0=",
+			"path": "golang.org/x/crypto/ripemd160",
+			"revision": "1d94cc7ab1c630336ab82ccb9c9cda72a875c382",
+			"revisionTime": "2020-02-12T18:29:22Z"
+		},
+		{
+			"checksumSHA1": "f51w0wL7u9Hy2kRebKr+x71HWm0=",
+			"path": "golang.org/x/crypto/sha3",
+			"revision": "1d94cc7ab1c630336ab82ccb9c9cda72a875c382",
+			"revisionTime": "2020-02-12T18:29:22Z"
 		}
 	],
 	"rootPath": "HackathonBlockchain"
