@@ -1,6 +1,11 @@
 {
 	"comment": "",
 	"ignore": "test",
-	"package": [],
+	"package": [
+		{
+			"path": "github.com/mr-tron/base5",
+			"revision": ""
+		}
+	],
 	"rootPath": "hackathonblockchain"
 }
