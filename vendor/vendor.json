@@ -2,5 +2,10 @@
 	"comment": "",
 	"ignore": "test",
 	"package": [],
-	"rootPath": "HackathonBlockchain"
+	"rootPath": "HackathonBlockchain",
+	"heroku": {
+	    "install": [
+	        "./cmd/..."
+	    ]
+	},
 }
