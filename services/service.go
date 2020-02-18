@@ -204,7 +204,7 @@ func (s basicService) AddBlock(ctx context.Context, bd BlockData, poml float64, 
 	  fmt.Print("1: Failed to get GBMS from firebase\n")
 	}
 	write := true
-
+	log.Printf("GBMS1 %+v : ",gbmsData)
 	// only add if its better than poml or address not in 
 
 	if val, ok := gbmsData[address]; ok {
@@ -242,16 +242,16 @@ func (s basicService) AddBlock(ctx context.Context, bd BlockData, poml float64, 
 			
 		
 		
-		
+		log.Printf("GBMS2 %+v : ",gbmsData)
 		if err := s.client.NewRef("gbms/"+Hash+"/").Set(ctx, gbmsData); err != nil {
 		  log.Print(err)
 		  fmt.Print("1: Failed to get GBMS from firebase\n")
 		}
-		gbmsDataBytes,_ := json.Marshal(gbmsData)
-		if err := s.client.NewRef("gbms/"+Hash+"/").Set(ctx, gbmsDataBytes); err != nil {
-		  log.Print(err)
-		  fmt.Print("1: Failed to get GBMS from firebase\n")
-		}
+		// gbmsDataBytes,_ := json.Marshal(gbmsData)
+		// if err := s.client.NewRef("gbms/"+Hash+"/").Set(ctx, gbmsDataBytes); err != nil {
+		//   log.Print(err)
+		//   fmt.Print("1: Failed to get GBMS from firebase\n")
+		// }
 	}
 
 	return nil
@@ -259,17 +259,17 @@ func (s basicService) AddBlock(ctx context.Context, bd BlockData, poml float64, 
 
 func (s basicService) PrintLeaderBoard(ctx context.Context, Hash string) (map[string]gbms, error){
 	
-	var gbmsDataBytes []byte
+	// var gbmsDataBytes []byte
 	var gbmsData map[string]gbms
 	var err error
-	if err = s.client.NewRef("gbms/"+Hash+"/").Get(ctx, &gbmsDataBytes); err != nil {
+	if err = s.client.NewRef("gbms/"+Hash+"/").Get(ctx, &gbmsData); err != nil {
 	  log.Print(err)
 	  fmt.Print("Not foundn inn Firebase\n")
 	}
-	fmt.Printf("GBMS : %+v", gbmsDataBytes)
-	_ = json.Unmarshal(gbmsDataBytes, &gbmsData)
+	// fmt.Printf("GBMS : %+v", gbmsDataBytes)
+	// _ = json.Unmarshal(gbmsDataBytes, &gbmsData)
 
-	fmt.Printf("GBMS : %+v", gbmsData)
+	fmt.Printf("GBMS3 : %+v", gbmsData)
 	// return nil, nil
 	return gbmsData, err
 }
