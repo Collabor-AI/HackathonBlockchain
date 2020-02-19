@@ -46,7 +46,7 @@ type BlockData struct {
 	Address string `json:"address"`
 	Email string `json:"email"`
 	TrainPreds string `json:"trainPreds"`
-	Preds string `json:"preds"`
+	// Preds string `json:"preds"`
 	Description string `json:"description,omitempty"`
 }
 
