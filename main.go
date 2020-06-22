@@ -48,6 +48,8 @@ func main(){
 	  DatabaseURL: "https://block-8f42c.firebaseio.com/",
 	}
 
+	CONF_JSON = "block-8f42c-firebase-adminsdk-5xrxz-0c78a97fb6.json"
+	
 	opt := option.WithCredentialsFile("block-8f42c-firebase-adminsdk-5xrxz-0c78a97fb6.json")
 	ctx := context.Background()
 	app, err := firebase.NewApp(ctx, config, opt)
